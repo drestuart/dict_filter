@@ -12,6 +12,9 @@ from dict_filter.filter import dict_filter
 # - Empty dictionary returns any dictionary
 # - Non-empty dictionary causes recursion into dict value
 # - Filter value is a function => Runs function on value
+#   - Lambda function
+#   - Named function
+#   - Built-in function
 
 
 

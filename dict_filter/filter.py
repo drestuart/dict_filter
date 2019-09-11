@@ -88,7 +88,10 @@ def recursive_filter(d, _filter):
                 return_dict[k] = v
 
             # List of ints => Return indexed values from list
-            elif isinstance(filter_value, list) and is_list_of_ints(filter_value):
+            elif isinstance(filter_value, list):
+                if not is_list_of_ints(filter_value):
+                    raise FilterStructureError(f"Bad filter value {k}->{filter_value}: List must contain 0 or more integer index values only")
+
                 return_dict[k] = [v[i] for i in filter_value]
 
         # Tuple values
@@ -99,7 +102,10 @@ def recursive_filter(d, _filter):
                 return_dict[k] = v
 
             # Tuple of ints => Return indexed values from tuple
-            elif isinstance(filter_value, tuple) and is_tuple_of_ints(filter_value):
+            elif isinstance(filter_value, tuple):
+                if not is_tuple_of_ints(filter_value):
+                    raise FilterStructureError(f"Bad filter value {k}->{filter_value}: Tuple must contain 0 or more integer index values only")
+
                 return_dict[k] = (v[i] for i in filter_value)
 
         # Dict values
@@ -110,15 +116,15 @@ def recursive_filter(d, _filter):
                 return_dict[k] = v
 
             # Non-empty dict => Recurse into dict 'v' using 'filter_value' as filter
-        elif isinstance(filter_value, dict):
-            return_dict[k] = recursive_filter(v, filter_value)
+            elif isinstance(filter_value, dict):
+                return_dict[k] = recursive_filter(v, filter_value)
 
         # Function values:
         elif callable(filter_value):
             return_dict[k] = filter_value(v)
 
         else:
-            raise FilterStructureError(f"Bad filter value {k}->{filter_value}")
-
+            # TODO figure out error case
+            pass
 
     return return_dict
