@@ -6,7 +6,7 @@ A simple library for extracting multiple values from a large dictionary or JSON 
 
 ## Examples
 
-	from dict_filter import dict_filter
+	from dict_filter.filter import dict_filter
 
 	ex_dict = {
 		'a': 1,
