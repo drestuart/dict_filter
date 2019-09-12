@@ -106,7 +106,7 @@ def recursive_filter(d, _filter):
                 if not is_tuple_of_ints(filter_value):
                     raise FilterStructureError(f"Bad filter value {k}->{filter_value}: Tuple must contain 0 or more integer index values only")
 
-                return_dict[k] = (v[i] for i in filter_value)
+                return_dict[k] = tuple(v[i] for i in filter_value)
 
         # Dict values
         elif isinstance(v, dict):
