@@ -80,6 +80,11 @@ def recursive_filter(d, _filter):
         if filter_value is None:
             return_dict[k] = v
 
+        # Function filter:
+        elif callable(filter_value):
+            return_dict[k] = filter_value(v)
+
+
         # List values
         elif isinstance(v, list):
 
@@ -118,10 +123,6 @@ def recursive_filter(d, _filter):
             # Non-empty dict => Recurse into dict 'v' using 'filter_value' as filter
             elif isinstance(filter_value, dict):
                 return_dict[k] = recursive_filter(v, filter_value)
-
-        # Function values:
-        elif callable(filter_value):
-            return_dict[k] = filter_value(v)
 
         else:
             # TODO figure out error case
