@@ -1,5 +1,5 @@
 import unittest
-from dict_filter.filter import dict_filter, FilterStructureError
+from dict_filter import dict_filter, FilterStructureError, ExtractDirective
 
 # List of test cases:
 #
@@ -16,8 +16,10 @@ from dict_filter.filter import dict_filter, FilterStructureError
 # - Non-empty dictionary causes recursion into dict value
 # - Filter value is a function => Runs function on value
 #   - Lambda function
-#   - Named function 
-#   - Built-in function
+#   - Named function
+#   - Built-in functions can take optional second argument with the whole object
+# - Builtin Directives
+#   - ExtractDirective
 
 
 class TestFilter(unittest.TestCase):
@@ -48,6 +50,18 @@ class TestFilter(unittest.TestCase):
                 'age': 11
             }
         ]
+    }
+
+    very_nested_dict = {
+        'alpha': {
+            'bravo': {
+                'charlie': {
+                    'delta': {
+                        'zulu': [1,2,3]
+                    }
+                }
+            }
+        }
     }
 
     def test_none(self):
@@ -219,6 +233,30 @@ class TestFilter(unittest.TestCase):
         })
 
         self.assertEqual(result, {'students': 3})
+
+
+    def test_function_two_args(self):
+        """
+        Test that a function that takes two args in the filter runs that function on the dict value and whole object
+        """
+
+        result = dict_filter(self.nested_dict, {
+            'students': lambda x, base: [f"{student['name']} {base['class_info']['subject']}" for student in x]
+        })
+
+        self.assertEqual(result, {'students': ['Frankie math', 'Johnny math', 'Luigi math']})
+
+
+    def test_extract_directive(self):
+        """
+        Test that an ExtractDirective pulls data out up out of a set of nested dicts
+        """
+
+        result = dict_filter(self.very_nested_dict, {
+            'alpha': ExtractDirective('bravo', 'charlie', 'delta', 'zulu')
+        })
+
+        self.assertEqual(result, {'alpha': [1,2,3]})
 
 
 

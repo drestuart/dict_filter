@@ -58,10 +58,10 @@ def dict_filter(dict_or_json, filter_dict):
             raise JSONStructureError("JSON strings must contain a single object")
 
     # Start filtering!
-    return recursive_filter(dict_to_filter, filter_dict)
+    return recursive_filter(dict_to_filter, filter_dict, dict_to_filter)
 
 
-def recursive_filter(d, _filter):
+def recursive_filter(d, _filter, base):
     """
     Build a dict of key->value pairs from 'd' where keys are present in 'filter'.
     Use values in 'filter' to decide what to do with values in 'd'.
@@ -82,8 +82,11 @@ def recursive_filter(d, _filter):
 
         # Function filter:
         elif callable(filter_value):
-            return_dict[k] = filter_value(v)
-
+            # Functions can take either one or two values
+            try:
+                return_dict[k] = filter_value(v, base)
+            except TypeError:
+                return_dict[k] = filter_value(v)                
 
         # List values
         elif isinstance(v, list):
@@ -122,10 +125,13 @@ def recursive_filter(d, _filter):
 
             # Non-empty dict => Recurse into dict 'v' using 'filter_value' as filter
             elif isinstance(filter_value, dict):
-                return_dict[k] = recursive_filter(v, filter_value)
+                return_dict[k] = recursive_filter(v, filter_value, base)
 
         else:
             # TODO figure out error case
             pass
 
     return return_dict
+
+
+__all__ = ['dict_filter', 'JSONStructureError', 'FilterStructureError']
