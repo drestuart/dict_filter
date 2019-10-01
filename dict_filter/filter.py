@@ -30,6 +30,20 @@ def oops_all_ints(it):
         return False
 
 
+def call_filter(to_call, value, base):
+    """
+    Encapsulates the logic for handling callables in the filter.
+    Call the callable to_call with value and possibly base.
+    """
+
+    # Callables can take either one or two values
+    try:
+        return to_call(value, base)
+    except TypeError:
+        return to_call(value)
+
+
+
 def dict_filter(dict_or_json, filter_dict):
     """
     Filter values out of input dict_or_json using filter_dict to select keys.
@@ -70,11 +84,17 @@ def recursive_filter(d, _filter, base):
 
     return_dict = {}
 
-    for (k, v) in d.items():
-        if not k in _filter:
-            continue
+    for (k, filter_value) in _filter.items():
 
-        filter_value = _filter[k]
+        # If the key in the filter doesn't match anything in the dictionary,
+        # check if we can call a function. Otherwise keep going.
+        if not k in d:
+            if callable(filter_value):
+                return_dict[k] = call_filter(filter_value, v, base)
+            else:
+                continue
+
+        v = d[k]
 
         # None => Return any value
         if filter_value is None:
@@ -82,50 +102,43 @@ def recursive_filter(d, _filter, base):
 
         # Function filter:
         elif callable(filter_value):
-            # Functions can take either one or two values
-            try:
-                return_dict[k] = filter_value(v, base)
-            except TypeError:
-                return_dict[k] = filter_value(v)                
+            return_dict[k] = call_filter(filter_value, v, base)
 
-        # List values
-        elif isinstance(v, list):
 
-            # Empty list => Return any list value
-            if filter_value == []:
-                return_dict[k] = v
+        # List cases
+        # Empty list => Return any list value
+        elif filter_value == [] and isinstance(v, list):
+            return_dict[k] = v
 
-            # List of ints => Return indexed values from list
-            elif isinstance(filter_value, list):
-                if not is_list_of_ints(filter_value):
-                    raise FilterStructureError(f"Bad filter value {k}->{filter_value}: List must contain 0 or more integer index values only")
+        # List of ints => Return indexed values from list
+        elif isinstance(filter_value, list) and isinstance(v, list):
+            if not is_list_of_ints(filter_value):
+                raise FilterStructureError(f"Bad filter value {k}->{filter_value}: List must contain 0 or more integer index values only")
 
-                return_dict[k] = [v[i] for i in filter_value]
+            return_dict[k] = [v[i] for i in filter_value]
 
-        # Tuple values
-        elif isinstance(v, tuple):
 
-            # Empty list => Return any tuple value
-            if filter_value == ():
-                return_dict[k] = v
+        # Tuple cases
+        # Empty list => Return any tuple value
+        elif filter_value == () and isinstance(v, tuple):
+            return_dict[k] = v
 
-            # Tuple of ints => Return indexed values from tuple
-            elif isinstance(filter_value, tuple):
-                if not is_tuple_of_ints(filter_value):
-                    raise FilterStructureError(f"Bad filter value {k}->{filter_value}: Tuple must contain 0 or more integer index values only")
+        # Tuple of ints => Return indexed values from tuple
+        elif isinstance(filter_value, tuple) and isinstance(v, tuple):
+            if not is_tuple_of_ints(filter_value):
+                raise FilterStructureError(f"Bad filter value {k}->{filter_value}: Tuple must contain 0 or more integer index values only")
 
-                return_dict[k] = tuple(v[i] for i in filter_value)
+            return_dict[k] = tuple(v[i] for i in filter_value)
 
-        # Dict values
-        elif isinstance(v, dict):
 
-            # Empty dict => Return any dict value
-            if filter_value == {}:
-                return_dict[k] = v
+        # Dict cases
+        # Empty dict => Return any dict value
+        elif filter_value == {} and isinstance(v, dict):
+            return_dict[k] = v
 
-            # Non-empty dict => Recurse into dict 'v' using 'filter_value' as filter
-            elif isinstance(filter_value, dict):
-                return_dict[k] = recursive_filter(v, filter_value, base)
+        elif isinstance(filter_value, dict) and isinstance(v, dict):
+            return_dict[k] = recursive_filter(v, filter_value, base)
+
 
         else:
             # TODO figure out error case
