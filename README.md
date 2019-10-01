@@ -42,3 +42,4 @@ TODO:
 
 - Different behavior on index error? Ignore or warn?
 - Fill in docs and examples
+- More directives

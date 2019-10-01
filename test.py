@@ -1,5 +1,5 @@
 import unittest
-from dict_filter import dict_filter, FilterStructureError, ExtractDirective
+from dict_filter import dict_filter, FilterStructureError, GetChildDirective, GetFromBaseDirective
 
 # List of test cases:
 #
@@ -19,7 +19,11 @@ from dict_filter import dict_filter, FilterStructureError, ExtractDirective
 #   - Named function
 #   - Built-in functions can take optional second argument with the whole object
 # - Builtin Directives
-#   - ExtractDirective
+#   - GetChildDirective
+#   - GetFromBaseDirective
+# - Filter value does not exist in dict
+#   - Calls a callable filter value
+#   - Otherwise skips
 
 
 class TestFilter(unittest.TestCase):
@@ -59,6 +63,13 @@ class TestFilter(unittest.TestCase):
                     'delta': {
                         'zulu': [1,2,3]
                     }
+                }
+            }
+        },
+        'spam': {
+            'eggs': {
+                'knights': {
+                    'sacred_words': ['Ni', 'Peng', 'Neee-Wom']
                 }
             }
         }
@@ -247,16 +258,54 @@ class TestFilter(unittest.TestCase):
         self.assertEqual(result, {'students': ['Frankie math', 'Johnny math', 'Luigi math']})
 
 
-    def test_extract_directive(self):
+    def test_get_child_directive(self):
         """
-        Test that an ExtractDirective pulls data out up out of a set of nested dicts
+        Test that an GetChildDirective pulls data up out of a set of nested dicts
         """
 
         result = dict_filter(self.very_nested_dict, {
-            'alpha': ExtractDirective('bravo', 'charlie', 'delta', 'zulu')
+            'alpha': GetChildDirective('bravo', 'charlie', 'delta', 'zulu')
         })
 
         self.assertEqual(result, {'alpha': [1,2,3]})
+
+
+    def test_get_from_base_directive(self):
+        """
+        Test that a GetFromBaseDirective pulls data out of the base dictionary as specified by the path
+        """
+
+        result = dict_filter(self.very_nested_dict, {
+            'alpha': GetFromBaseDirective('spam', 'eggs', 'knights', 'sacred_words')
+        })
+
+        self.assertEqual(result, {'alpha': ['Ni', 'Peng', 'Neee-Wom']})
+
+
+    def test_filter_key_not_in_dict(self):
+        """
+        Test that having a filter key not in the base dictionary correctly calls a callable
+        """
+
+        result = dict_filter(self.very_nested_dict, {
+            'those words': GetFromBaseDirective('spam', 'eggs', 'knights', 'sacred_words')
+        })
+
+        self.assertEqual(result, {'those words': ['Ni', 'Peng', 'Neee-Wom']})
+
+
+    def test_filter_key_not_in_dict_error(self):
+        """
+        Test that having a filter key not in the base dictionary 
+        skips when the filter value is not callable
+        """
+
+        result = dict_filter(self.nested_dict, {
+            'does_not_exist': [],
+            'class_info': {'subject': None}
+        })
+
+        self.assertEqual(result, {'class_info': {'subject': 'math'}})
 
 
 
