@@ -1,8 +1,17 @@
 # dict_filter
 A simple library for extracting multiple values from a large dictionary or JSON object
 
+## Installation
 
-## Examples
+Simply do:
+
+	pip install dict_filter
+
+Compatible with Python 3.6.8 and above.
+
+## Basic usage
+
+`dict_filter` uses the contents of a "filter dictionary" to extract values from a source dictionary (or an object in a JSON-encoded string). A simple example:
 
 	from dict_filter import dict_filter
 
@@ -17,29 +26,24 @@ A simple library for extracting multiple values from a large dictionary or JSON 
 		'c': []
 	})
 
-	print(result)
+	print(result) # {'a': 1, 'c': [3, 4, 5]}
 
-	# Prints {'a': 1, 'c': [3, 4, 5]}
+## Filter values
 
-
-
+`dict_filter` looks at each key-value pair in the filter and uses the value to decide what to do with the correpsonding key in the input dictionary.
 
 - None returns any value
 - Empty list returns any list
 - List of ints returns indexed values in list
-  - Index error cases
 - Empty tuple returns any tuple
 - Tuple of ints returns indexed values in tuple
-  - Index error cases
 - Empty dictionary returns any dictionary
 - Non-empty dictionary causes recursion into dict value
-- Filter value is a function => Runs function on value
-  - Lambda function
-  - Named function
-  - Built-in function
+- If the filter value is a callable object, the function is run with the value (and optionally the whole dictionary) as inputs. This works with:
+  - Lambda functions
+  - Named functions
+  - Built-in functions
 
-TODO: 
+## More examples
 
-- Different behavior on index error? Ignore or warn?
-- Fill in docs and examples
-- More directives
+

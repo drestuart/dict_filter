@@ -3,6 +3,7 @@ from dict_filter import dict_filter, FilterStructureError, GetChildDirective, Ge
 
 # List of test cases:
 #
+# - JSON objects are accepted
 # - None returns any value
 # - Empty list returns any list 
 # - List of ints returns indexed values in list
@@ -74,6 +75,19 @@ class TestFilter(unittest.TestCase):
             }
         }
     }
+
+    json_object = '{"a": 1, "b": [2, 4, 8, 16], "c": [3, 4, 5]}'
+
+    def test_json_object(self):
+        """
+        Test that None returns any value
+        """
+
+        result = dict_filter(self.json_object, {
+            'a': None
+        })
+
+        self.assertEqual(result, {'a': 1})
 
     def test_none(self):
         """
