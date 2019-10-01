@@ -88,13 +88,13 @@ def recursive_filter(d, _filter, base):
 
         # If the key in the filter doesn't match anything in the dictionary,
         # check if we can call a function. Otherwise keep going.
+        v = d.get(k)
+        
         if not k in d:
             if callable(filter_value):
                 return_dict[k] = call_filter(filter_value, v, base)
             else:
                 continue
-
-        v = d[k]
 
         # None => Return any value
         if filter_value is None:
