@@ -1,14 +1,6 @@
 # dict_filter
 A simple library for extracting multiple values from a large dictionary or JSON object
 
-## Installation
-
-Simply do:
-
-	pip install dict_filter
-
-Compatible with Python 3.6.8 and above.
-
 ## Basic usage
 
 `dict_filter` uses the contents of a "filter dictionary" to extract values from a source dictionary (or an object in a JSON-encoded string). A simple example:
